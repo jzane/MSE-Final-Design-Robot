@@ -584,7 +584,7 @@ void loop()
            while loop to hold code here to make full left turn
        holds until right encoder reads
        */
-      while (encoder_RightMotor.getRawPosition() <= 0.3)
+      while (encoder_RightMotor.getRawPosition() <= 1)
       {
         servo_LeftMotor.writeMicroseconds(1000); //full speed left turn
         servo_RightMotor.writeMicroseconds(2000);
