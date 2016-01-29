@@ -33,10 +33,10 @@ I2CEncoder encoder_GripMotor;
 
 // Uncomment keywords to enable debugging output
 
-//#define DEBUG_MODE_DISPLAY
+#define DEBUG_MODE_DISPLAY
 //#define DEBUG_MOTORS
 //#define DEBUG_LINE_TRACKERS
-#define DEBUG_ENCODERS
+//#define DEBUG_ENCODERS
 //#define DEBUG_ULTRASONIC
 //#define DEBUG_LINE_TRACKER_CALIBRATION
 //#define DEBUG_MOTOR_CALIBRATION
@@ -373,13 +373,12 @@ void loop()
           {
             //all three sensors are reading light
             servo_LeftMotor.writeMicroseconds(200); //stop motors
-            servo_RightMotor.writeMicroseconds
-
-              (200);
+            servo_RightMotor.writeMicroseconds(200);
             //ui_Robot_State_Index = 0; //resets the robot to mode 0 (used for lab03)
             if (which_case == 0)
             {
-              ui_Robot_State_Index = 5; //bumbs into case 5 for
+              ui_Robot_State_Index = 5; //bumbs into case 5
+              break;
             }
             else if (which_case == 1)
             {
@@ -395,7 +394,6 @@ void loop()
             servo_RightMotor.writeMicroseconds(200);
             //ui_Robot_State_Index = 0; //resets the robot to mode 0 (used for lab03)
 
-            grab_object_mode = true;
           }
 
 
@@ -409,7 +407,8 @@ void loop()
         Serial.print(" . Right = ");
         Serial.println(ui_Right_Motor_Speed);
 #endif
-        ui_Mode_Indicator_Index = 1; // remember to chage this back to 1 for logiacal flow
+        // ui_Mode_Indicator_Index = 1; // remember to chage this back to 1 for logiacal flow
+        which_case = 0;
       }
       break;
     }
@@ -579,15 +578,15 @@ void loop()
   case 5:    //Light Sensor mode
     {
       encoder_RightMotor.zero(); //zeros the tick count of right encoder
-
+      delay(100);
       /*
            while loop to hold code here to make full left turn
        holds until right encoder reads
        */
-      while (encoder_RightMotor.getRawPosition() <= 1)
+      while (encoder_RightMotor.getRawPosition() <= 1.37)
       {
-        servo_LeftMotor.writeMicroseconds(1000); //full speed left turn
-        servo_RightMotor.writeMicroseconds(2000);
+        servo_LeftMotor.writeMicroseconds(1600); //left turn
+        servo_RightMotor.writeMicroseconds(200);
       }
       //if here, now pointing left, moving forward just enough to get the line tracking IR sensors to read the line
       servo_LeftMotor.writeMicroseconds(1600); //slowly forward
@@ -595,6 +594,7 @@ void loop()
       delay(100);
       servo_LeftMotor.writeMicroseconds(200); //stop
       servo_RightMotor.writeMicroseconds(200);
+      which_case = 1;
       ui_Robot_State_Index = 1;  //when breaks from this case, it will go back into 1
       break;
     }
@@ -675,10 +675,10 @@ void loop()
 
       //start by moving to the right
       encoder_RightMotor.zero();
-      while (encoder_RightMotor.getRawPosition() <= 0.15) //arbitrary value to get robot to turn right to some value
+      while (encoder_RightMotor.getRawPosition() >= -0.15) //arbitrary value to get robot to turn right to some value
       {
-        servo_LeftMotor.writeMicroseconds(1000); //full speed right
-        servo_RightMotor.writeMicroseconds(2000);
+        servo_LeftMotor.writeMicroseconds(200); //right turn
+        servo_RightMotor.writeMicroseconds(1350);
       }
       servo_LeftMotor.writeMicroseconds(200); //full stop
       servo_RightMotor.writeMicroseconds(200);
@@ -700,7 +700,7 @@ void loop()
       light_sensor_data = analogRead(A3); //read value from light sensor, store it in global variable
 
 
-      while (encoder_RightMotor.getRawPosition() <= 2) //arbitrary value to get robot to turn to full left position
+      while (encoder_RightMotor.getRawPosition() <= 0.3) //arbitrary value to get robot to turn to full left position
       {
         current_position = encoder_RightMotor.getRawPosition(); //sets current_position as the current encoder 'tick reading'
         while (encoder_RightMotor.getRawPosition() - current_position <= 0.1) //moves the bot a little bit to the left each time
@@ -800,7 +800,7 @@ void loop()
        */
 
       encoder_RightMotor.zero();
-      while(encoder_RightMotor <= 0.2) //MAY NEED TO CHANGE THIS VALUE
+      while(encoder_RightMotor.getRawPosition() <= 0.2) //MAY NEED TO CHANGE THIS VALUE
       {
         servo_LeftMotor.writeMicroseconds(1000); //full speed right
         servo_RightMotor.writeMicroseconds(2000);
@@ -832,7 +832,7 @@ void loop()
         servo_RightMotor.writeMicroseconds(200);
 
       }
-        //breaks into case 1 again to drive the rest of the course
+      //breaks into case 1 again to drive the rest of the course
 
       ui_Robot_State_Index = 1;
       break;
@@ -849,7 +849,7 @@ void loop()
 
 #ifdef DEBUG_MODE_DISPLAY
     Serial.print("Mode: ");
-    Serial.println(ui_Mode_Indicator[ui_Mode_Indicator_Index], DEC);
+    Serial.println(ui_Robot_State_Index, DEC);
 #endif
     bt_Heartbeat = !bt_Heartbeat;
     CharliePlexM::Write(ci_Heartbeat_LED, bt_Heartbeat);
@@ -1005,6 +1005,7 @@ void TurnLeft()
   delay(500);
   ui_Mode_Indicator_Index = 1;
 }
+
 
 
 
