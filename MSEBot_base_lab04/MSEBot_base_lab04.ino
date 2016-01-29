@@ -121,6 +121,7 @@ unsigned int ui_Right_Motor_Speed;
 unsigned long ul_Left_Motor_Position;
 unsigned long ul_Right_Motor_Position;
 unsigned long ul_Grip_Motor_Position;
+unsigned long leftTurn_Encoder_Position;
 
 unsigned long ul_3_Second_timer = 0;
 unsigned long ul_Display_Time;
@@ -373,9 +374,7 @@ void loop()
           {
             //all three sensors are reading light
             servo_LeftMotor.writeMicroseconds(200); //stop motors
-            servo_RightMotor.writeMicroseconds
-
-              (200);
+            servo_RightMotor.writeMicroseconds(200);
             //ui_Robot_State_Index = 0; //resets the robot to mode 0 (used for lab03)
             if (which_case == 0)
             {
@@ -388,7 +387,7 @@ void loop()
 
           }
 
-          if (!(ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && !(ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && !(ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)))
+       /*   if (!(ui_Right_Line_Tracker_Data < (ui_Right_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && !(ui_Middle_Line_Tracker_Data < (ui_Middle_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)) && !(ui_Left_Line_Tracker_Data < (ui_Left_Line_Tracker_Dark - ui_Line_Tracker_Tolerance)))
           {
             //all three sensors are reading light
             servo_LeftMotor.writeMicroseconds(200); //stop motors
@@ -397,7 +396,7 @@ void loop()
 
             grab_object_mode = true;
           }
-
+*/
 
         }//end if motors enabled
 
@@ -409,7 +408,8 @@ void loop()
         Serial.print(" . Right = ");
         Serial.println(ui_Right_Motor_Speed);
 #endif
-        ui_Mode_Indicator_Index = 1; // remember to chage this back to 1 for logiacal flow
+       // ui_Mode_Indicator_Index = 1; // remember to chage this back to 1 for logiacal flow
+       which_case = 0;
       }
       break;
     }
@@ -584,17 +584,21 @@ void loop()
            while loop to hold code here to make full left turn
        holds until right encoder reads
        */
-      while (encoder_RightMotor.getRawPosition() <= 0.3)
+       leftTurn_Encoder_Position = encoder_RightMotor.getRawPosition();
+      while (encoder_RightMotor.getRawPosition() <= encoder_RightMotor.getRawPosition() + 0.5)
       {
-        servo_LeftMotor.writeMicroseconds(1000); //full speed left turn
-        servo_RightMotor.writeMicroseconds(2000);
+        servo_LeftMotor.writeMicroseconds(200); //full speed left turn
+        servo_RightMotor.writeMicroseconds(1600);
       }
+      /*
       //if here, now pointing left, moving forward just enough to get the line tracking IR sensors to read the line
       servo_LeftMotor.writeMicroseconds(1600); //slowly forward
       servo_RightMotor.writeMicroseconds(1600);
       delay(100);
       servo_LeftMotor.writeMicroseconds(200); //stop
       servo_RightMotor.writeMicroseconds(200);
+      */
+      which_case++;
       ui_Robot_State_Index = 1;  //when breaks from this case, it will go back into 1
       break;
     }
@@ -675,10 +679,10 @@ void loop()
 
       //start by moving to the right
       encoder_RightMotor.zero();
-      while (encoder_RightMotor.getRawPosition() <= 0.15) //arbitrary value to get robot to turn right to some value
+      while (encoder_RightMotor.getRawPosition() <= -0.15) //arbitrary value to get robot to turn right to some value
       {
-        servo_LeftMotor.writeMicroseconds(1000); //full speed right
-        servo_RightMotor.writeMicroseconds(2000);
+        servo_LeftMotor.writeMicroseconds(200); //full speed right
+        servo_RightMotor.writeMicroseconds(1350);
       }
       servo_LeftMotor.writeMicroseconds(200); //full stop
       servo_RightMotor.writeMicroseconds(200);
@@ -800,7 +804,7 @@ void loop()
        */
 
       encoder_RightMotor.zero();
-      while(encoder_RightMotor <= 0.2) //MAY NEED TO CHANGE THIS VALUE
+      while(encoder_RightMotor.getRawPosition() <=0.2) //MAY NEED TO CHANGE THIS VALUE
       {
         servo_LeftMotor.writeMicroseconds(1000); //full speed right
         servo_RightMotor.writeMicroseconds(2000);
@@ -832,7 +836,7 @@ void loop()
         servo_RightMotor.writeMicroseconds(200);
 
       }
-        //breaks into case 1 again to drive the rest of the course
+        //breaks into case 1 again to drive towards the target
 
       ui_Robot_State_Index = 1;
       break;
